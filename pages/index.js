@@ -1,5 +1,6 @@
-import React from 'react';
-import { PublicKey } from '@solana/web3.js';
+import React, { useEffect, useState } from 'react';
+import Product from "../components/Product";
+
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
@@ -8,16 +9,32 @@ const TWITTER_HANDLE = '_web3dev';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
 const App = () => {
-  // Isso buscará a chave pública dos usuários (endereço da carteira) de qualquer carteira que suportamos
   const { publicKey } = useWallet();
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    if (publicKey) {
+      fetch(`/api/fetchProducts`)
+        .then(response => response.json())
+        .then(data => {
+          setProducts(data);
+          console.log("Products", data);
+        });
+    }
+  }, [publicKey]);
 
   const renderNotConnectedContainer = () => (
-    <div>
-      <img src="https://media.tenor.com/1mJ-tJSzvwsAAAAd/solana-sol.gif" alt="emoji" />
+    <div className="button-container">
+      <WalletMultiButton className="cta-button connect-wallet-button" />
+    </div>
+  );
 
-      <div className="button-container">
-        <WalletMultiButton className="cta-button connect-wallet-button" />
-      </div>    
+
+  const renderItemBuyContainer = () => (
+    <div className="products-container">
+      {products.map((product) => (
+        <Product key={product.id} product={product} />
+      ))}
     </div>
   );
 
@@ -25,14 +42,12 @@ const App = () => {
     <div className="App">
       <div className="container">
         <header className="header-container">
-          <p className="header"> WEB3 Tools Development</p>
-          <p className="sub-text">Venda seus serviços e encontre clientes facilmente e com segurança!</p>
+          <p className="header"> PLACEBOOK</p>
+          <p className="sub-text">A loja de E-books e materiais digitais.</p>
         </header>
 
         <main>
-          {/* Nós só renderizamos o botão de conexão se a chave pública não existir */}
-          {publicKey ? 'Conectado!' : renderNotConnectedContainer()}
-
+          {publicKey ? renderItemBuyContainer() : renderNotConnectedContainer()}
         </main>
 
         <div className="footer-container">
@@ -42,7 +57,7 @@ const App = () => {
             href={TWITTER_LINK}
             target="_blank"
             rel="noreferrer"
-          >{`Tecnologia WEB3 Blockchain`}</a>
+          >{`contruido na @${TWITTER_HANDLE}`}</a>
         </div>
       </div>
     </div>
